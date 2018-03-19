@@ -1,4 +1,6 @@
-﻿namespace GeekBurger_HTML.Services
+﻿using System;
+
+namespace GeekBurger_HTML.Services
 {
     public interface IReceiveMessagesFactory
     {

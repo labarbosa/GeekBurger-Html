@@ -25,6 +25,7 @@ namespace GeekBurger_HTML
             services.AddMvc();
             services.AddSignalR();
             services.AddSingleton<IReceiveMessagesFactory, ReceiveMessagesFactory>();
+            services.AddSingleton<IDebugService, DebugService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

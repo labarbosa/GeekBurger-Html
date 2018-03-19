@@ -21,7 +21,8 @@ namespace GeekBurger_HTML.Controllers
     {
         private readonly UiApiConfiguration _uIApiConfiguration;
         private readonly IHostingEnvironment _env;
-        public HtmlController(IHostingEnvironment env)
+        private readonly IDebugService _debugService;
+        public HtmlController(IHostingEnvironment env, IDebugService debugService)
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -31,6 +32,7 @@ namespace GeekBurger_HTML.Controllers
             _uIApiConfiguration = config.GetSection("UIApi").Get<UiApiConfiguration>();
 
             _env = env;
+            _debugService = debugService;
         }
 
         public IActionResult Index()
@@ -88,6 +90,16 @@ namespace GeekBurger_HTML.Controllers
                 await client.PostAsync(apiUrl, content);
             }
 
+        }
+
+        [HttpGet]
+        public IActionResult Debug(string command)
+        {
+            var message = command?.Split('|');
+            if (message?.Length > 1)
+                _debugService.SendMessageAsync(message[0], message[1], message.Length > 2 ? message[2] : null).Wait();
+
+            return Json("OK");
         }
     }
 }

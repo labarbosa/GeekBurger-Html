@@ -115,3 +115,18 @@
         That's how crew will be able to deliver the order to you.
     </h3>
 </div>
+
+<div class="debug-window">
+    
+    <div>Send message to simulate external interaction</div>
+<div><select id="message">
+        <option>uicommand|showfoodrestrictionsform</option>
+        <option>uicommand|showproductslist|products.json</option>
+        <option>orderpaid|8048e9ec-80fe-4bad-bc2a-e4f4a75c834e</option>
+    </select>
+</div>
+    <div>
+    <button id="send-message">send message</button>
+    </div>
+    <div id="result"></div>
+</div>
