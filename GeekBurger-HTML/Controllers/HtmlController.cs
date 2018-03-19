@@ -72,9 +72,9 @@ namespace GeekBurger_HTML.Controllers
             }
 
             //submit to UI service
-            var faceToPost = new FaceToPost() { Face = face };
+            //var faceToPost = new FaceToPost() { Face = face };
             
-            PostToApi(faceToPost, _uIApiConfiguration.FaceApi);
+            PostToApi(face, _uIApiConfiguration.FaceApi);
 
             return Ok();
         }

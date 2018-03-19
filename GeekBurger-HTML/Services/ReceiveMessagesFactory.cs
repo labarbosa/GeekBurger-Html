@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using GeekBurguer.UI.Contract;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace GeekBurger_HTML.Services
@@ -9,6 +10,7 @@ namespace GeekBurger_HTML.Services
         private readonly ILogger<ReceiveMessagesService> _logger;
         public ReceiveMessagesFactory(IHubContext<MessageHub> hubContext, ILogger<ReceiveMessagesService> logger)
         {
+
             _hubContext = hubContext;
             _logger = logger;
 
