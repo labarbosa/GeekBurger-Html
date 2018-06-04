@@ -111,7 +111,7 @@ $(document).ready(function () {
 
         var order = {
             Products: selectedProducts,
-            RequestDate: dformat
+            RequesterId: $('#RequesterId').val()
         }
 
         $.ajax({
@@ -140,7 +140,8 @@ $(document).ready(function () {
                     CardOwnerName: "MIKE JOHNSON",
                     ExpirationDate: "10/01/2017",
                     SecurityCode: "212",
-                    StoreId: "8048e9ec-80fe-4bad-bc2a-e4f4a75c834e"
+                    StoreId: "8048e9ec-80fe-4bad-bc2a-e4f4a75c834e",
+                    RequesterId: $('#RequesterId').val()
                 };
 
                 setTimeout(function () {
@@ -262,6 +263,7 @@ function submitFoodRestrictions(event) {
     var formDataJson = $(this).serializeFormJSON();
 
     formDataJson.Others = formDataJson.Others.split(',');
+    formDataJson.RequesterId = $("#RequesterId").val();
 
     var apiUrl = $('#FoodRestrictionsApiUrl').val();
 

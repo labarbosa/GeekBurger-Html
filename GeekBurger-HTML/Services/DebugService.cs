@@ -28,7 +28,7 @@ namespace GeekBurger_HTML.Services
                 message = new Message(content) { Label = label };
             }
             else
-                message = new Message() { Label = label };
+                message = new Message() { Label = label, CorrelationId = label };
 
             await topicClient.SendAsync(message);
 

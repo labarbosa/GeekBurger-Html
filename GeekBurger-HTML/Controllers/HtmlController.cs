@@ -22,6 +22,7 @@ namespace GeekBurger_HTML.Controllers
         private readonly UiApiConfiguration _uIApiConfiguration;
         private readonly IHostingEnvironment _env;
         private readonly IDebugService _debugService;
+        private readonly Guid RequesterId = Guid.NewGuid();
         public HtmlController(IHostingEnvironment env, IDebugService debugService)
         {
             var config = new ConfigurationBuilder()
@@ -40,7 +41,7 @@ namespace GeekBurger_HTML.Controllers
             ViewBag.FoodRestrictionsApi = _uIApiConfiguration.FoodRestrictionsApi;
             ViewBag.OrderApi = _uIApiConfiguration.OrderApi;
             ViewBag.OrderPayApi = _uIApiConfiguration.OrderPayApi;
-
+            ViewBag.RequesterId = RequesterId;
             return View();
         }
 
@@ -72,9 +73,9 @@ namespace GeekBurger_HTML.Controllers
             }
 
             //submit to UI service
-            //var faceToPost = new FaceToPost() { Face = face };
+            var faceToPost = new FaceToPost() { Face = face, RequesterId = RequesterId };
             
-            PostToApi(face, _uIApiConfiguration.FaceApi);
+            PostToApi(faceToPost, _uIApiConfiguration.FaceApi);
 
             return Ok();
         }

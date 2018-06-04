@@ -64,6 +64,7 @@ namespace GeekBurger_HTML.Services
                     Filter = new CorrelationFilter { Label = filter },
                     Name = filterName
                 }).Wait();
+
             }
 
             subscriptionClient.RegisterMessageHandler(Handle, mo);

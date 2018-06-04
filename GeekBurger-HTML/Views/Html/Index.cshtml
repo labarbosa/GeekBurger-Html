@@ -5,6 +5,7 @@
 @Html.Hidden("FoodRestrictionsApi", (object)ViewBag.FoodRestrictionsApi)
 @Html.Hidden("OrderApi", (object)ViewBag.OrderApi)
 @Html.Hidden("OrderPayApi", (object)ViewBag.OrderPayApi)
+@Html.Hidden("RequesterId", (object)ViewBag.RequesterId)
 
 <div id="step1" class="steps">
     <h1>Welcome to Geek Burger!</h1>
@@ -35,7 +36,7 @@
                 <input type="checkbox" name="Restrictions" value="gluten" />Gluten
             </div>
             <div>
-                <input type="checkbox" name="Restrictions" value="milk" />Milk
+                <input type="checkbox" name="Restrictions" value="diary" />Milk
             </div>
             <div>
                 <input type="checkbox" name="Restrictions" value="peanut" />Peanuts
