@@ -10,10 +10,14 @@ using Microsoft.AspNetCore.Mvc;
 using GeekBurger_HTML.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using GeekBurger_HTML.Services;
 using Microsoft.Extensions.Configuration;
 using GeekBurger_HTML.Configuration;
+using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Registry;
 
 namespace GeekBurger_HTML.Controllers
 {
@@ -22,8 +26,13 @@ namespace GeekBurger_HTML.Controllers
         private readonly UiApiConfiguration _uIApiConfiguration;
         private readonly IHostingEnvironment _env;
         private readonly IDebugService _debugService;
+        private readonly IReadOnlyPolicyRegistry<string> _policyRegistry;
         private readonly Guid RequesterId = Guid.NewGuid();
-        public HtmlController(IHostingEnvironment env, IDebugService debugService)
+        private readonly ILogger _logger;
+        public HtmlController(IHostingEnvironment env,
+            IDebugService debugService,
+            ILogger<HtmlController> logger,
+            IReadOnlyPolicyRegistry<string> policyRegistry)
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -34,6 +43,8 @@ namespace GeekBurger_HTML.Controllers
 
             _env = env;
             _debugService = debugService;
+            _logger = logger;
+            _policyRegistry = policyRegistry;
         }
 
         public IActionResult Index()
@@ -74,22 +85,40 @@ namespace GeekBurger_HTML.Controllers
 
             //submit to UI service
             var faceToPost = new FaceToPost() { Face = face, RequesterId = RequesterId };
-            
-            PostToApi(faceToPost, _uIApiConfiguration.FaceApi);
 
-            return Ok();
+            var response = PostToApi(faceToPost, _uIApiConfiguration.FaceApi).Result;
+
+            return response.IsSuccessStatusCode ? Ok() : StatusCode(500);
         }
 
-        private static async void PostToApi(dynamic data, string apiUrl)
+        private async Task<HttpResponseMessage> PostToApi(dynamic data, string apiUrl)
         {
             var client = new HttpClient();
             var byteData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data));
 
-            using (var content = new ByteArrayContent(byteData))
+            var content = new ByteArrayContent(byteData);
+
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            
+            var retryPolicy = _policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>(PolicyNames.BasicRetry)
+                              ?? Policy.NoOpAsync<HttpResponseMessage>();
+
+            var context = new Context($"GetSomeData-{Guid.NewGuid()}", new Dictionary<string, object>
+                {
+                    { PolicyContextItems.Logger, _logger }
+                });
+
+            var retries = 0;
+            // ReSharper disable once AccessToDisposedClosure
+            var response = await retryPolicy.ExecuteAsync((ctx) =>
             {
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                await client.PostAsync(apiUrl, content);
-            }
+                client.DefaultRequestHeaders.Remove("retries");
+                client.DefaultRequestHeaders.Add("retries", new []{ retries++.ToString() });
+                return client.PostAsync(apiUrl, content);
+            }, context);
+            content.Dispose();
+
+            return response;
 
         }
 
@@ -102,5 +131,10 @@ namespace GeekBurger_HTML.Controllers
 
             return Json("OK");
         }
+    }
+
+    public class LoggingEvents
+    {
+        public const int GenericFailure = 1000;
     }
 }

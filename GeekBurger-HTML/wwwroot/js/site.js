@@ -76,11 +76,16 @@ $(document).ready(function () {
     
     connection.on('uicommand', (label, message) => {
         $('.steps').hide();
-        if (label === 'showfoodrestrictionsform') {
+
+        if (label.toLowerCase() === 'showwelcomepage') {
+            $('#step1').show();
+        }
+        
+        if (label.toLowerCase() === 'showfoodrestrictionsform') {
             $("#step-3").show();            
         }
 		//STEP 4
-        if (label === 'showproductslist') {
+        if (label.toLowerCase() === 'showproductslist') {
             _products = message;
             formatProducts(_products);
             $("#step-4").show();
@@ -191,30 +196,17 @@ function startWebcam() {
 
     $('.steps').hide();
     $('#step2').show();
+    video = document.querySelector('#video');
 
-    if (navigator.getUserMedia) {
-        navigator.getUserMedia(
-
-            // constraints
-            {
-                video: true,
-                audio: false
-            },
-
-            // successCallback
-            function (localMediaStream) {
-                video = document.querySelector('video');
-                video.src = window.URL.createObjectURL(localMediaStream);
-                webcamStream = localMediaStream;
-
+    if (navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                video.srcObject = stream;
+                webcamStream = stream;
                 $('#takeSnapshot').show();
-            },
-
-            // errorCallback
-            function (err) {
-                console.log("The following error occured: " + err);
-            }
-        );
+            }).catch(function (error) {
+                console.log("Something went wrong!");
+            });
     } else {
         console.log("getUserMedia not supported");
     }

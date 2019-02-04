@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using GeekBurger.Orders.Contract;
 using GeekBurger_HTML.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 
 namespace GeekBurger_HTML.Controllers
 {
     public class MockController :Controller
-    {
+    {        
         [HttpPost("api/face")]
-        public IActionResult Face() {
-            return Ok();
+        public IActionResult Face()
+        {
+            HttpContext.Request.Headers.TryGetValue("retries", out var stringValues);
+
+            var tries = Convert.ToInt32(stringValues[0]);
+
+            if (tries == 0 || tries % 3 != 0)
+                return NotFound();
+            else return Ok();
         }
 
         [HttpPost("/api/FoodRestrictions")]

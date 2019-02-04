@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GeekBurger_HTML.Controllers;
 using GeekBurger_HTML.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,6 +27,7 @@ namespace GeekBurger_HTML
             services.AddSignalR();
             services.AddSingleton<IReceiveMessagesFactory, ReceiveMessagesFactory>();
             services.AddSingleton<IDebugService, DebugService>();
+            services.AddPollyPolicies();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
