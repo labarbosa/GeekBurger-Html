@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Registry;
@@ -17,14 +18,19 @@ namespace GeekBurger_HTML.Controllers
                 {
                     if (!context.TryGetLogger(out var logger)) return;
 
+                    context.TryGetValue("url", out var url);
+
+                    var telemetry = new TelemetryClient();
                     if (result.Exception != null)
                     {
-                        logger.LogError(result.Exception, "An exception occurred on retry {RetryAttempt} for {PolicyKey}", retryCount, context.PolicyKey);
+                        telemetry.TrackException(new Exception($"An exception occurred on retry {retryCount} for {context.PolicyKey} " +
+                                                               $"on URL {url}"));
                     }
                     else
                     {
-                        logger.LogError("A non success code {StatusCode} was received on retry {RetryAttempt} for {PolicyKey}. Will retry in {NextTry} seconds",
-                            (int)result.Result.StatusCode, retryCount, context.PolicyKey, Math.Pow(2, retryCount));
+                        telemetry.TrackException(new Exception($"A non success code {(int)result.Result.StatusCode} " +
+                                                               $"was received on retry {retryCount} for {context.PolicyKey}. " +
+                                                               $"Will retry in {Math.Pow(2, retryCount)} seconds on URL {url}"));
                     }
                 })
                 .WithPolicyKey(PolicyNames.BasicRetry);

@@ -15,6 +15,8 @@ using Newtonsoft.Json;
 using GeekBurger_HTML.Services;
 using Microsoft.Extensions.Configuration;
 using GeekBurger_HTML.Configuration;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Registry;
@@ -105,7 +107,7 @@ namespace GeekBurger_HTML.Controllers
 
             var context = new Context($"GetSomeData-{Guid.NewGuid()}", new Dictionary<string, object>
                 {
-                    { PolicyContextItems.Logger, _logger }
+                    { PolicyContextItems.Logger, _logger }, { "url", apiUrl }
                 });
 
             var retries = 0;
@@ -114,8 +116,14 @@ namespace GeekBurger_HTML.Controllers
             {
                 client.DefaultRequestHeaders.Remove("retries");
                 client.DefaultRequestHeaders.Add("retries", new []{ retries++.ToString() });
-                return client.PostAsync(apiUrl, content);
+
+                var uri = Request.GetUri();
+                var baseUrl = uri.Scheme + Uri.SchemeDelimiter + uri.Host + ":" + uri.Port;
+                var isValid = Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute);
+
+                return client.PostAsync(isValid ? apiUrl : $"{baseUrl}/api/Face", content);
             }, context);
+
             content.Dispose();
 
             return response;
