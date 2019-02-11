@@ -70,9 +70,8 @@ $(document).ready(function () {
     $('#takeSnapshot').click(snapshot);
     $('#formStep3').submit(submitFoodRestrictions);
 
-    var connection = new signalR.HubConnection('/messagehub');
+    var connection = new signalR.HubConnectionBuilder().withUrl('/messagehub').build();
     connection.start().catch(err => showErr(err));
-
     
     connection.on('uicommand', (label, message) => {
         $('.steps').hide();
