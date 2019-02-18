@@ -25,6 +25,7 @@ namespace GeekBurger_HTML.Controllers
 {
     public class HtmlController : Controller
     {
+        private string _baseUri;
         private readonly UiApiConfiguration _uIApiConfiguration;
         private readonly IHostingEnvironment _env;
         private readonly IDebugService _debugService;
@@ -101,7 +102,7 @@ namespace GeekBurger_HTML.Controllers
             var content = new ByteArrayContent(byteData);
 
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            
+
             var retryPolicy = _policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>(PolicyNames.BasicRetry)
                               ?? Policy.NoOpAsync<HttpResponseMessage>();
 
@@ -115,13 +116,18 @@ namespace GeekBurger_HTML.Controllers
             var response = await retryPolicy.ExecuteAsync((ctx) =>
             {
                 client.DefaultRequestHeaders.Remove("retries");
-                client.DefaultRequestHeaders.Add("retries", new []{ retries++.ToString() });
+                client.DefaultRequestHeaders.Add("retries", new[] { retries++.ToString() });
 
-                var uri = Request.GetUri();
-                var baseUrl = uri.Scheme + Uri.SchemeDelimiter + uri.Host + ":" + uri.Port;
+                var baseUrl = _baseUri;
+                if (string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    var uri = Request.GetUri();
+                    baseUrl = uri.Scheme + Uri.SchemeDelimiter + uri.Host + ":" + uri.Port;
+                }
+
                 var isValid = Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute);
 
-                return client.PostAsync(isValid ? apiUrl : $"{baseUrl}/api/Face", content);
+                return client.PostAsync(isValid ? $"{baseUrl}{apiUrl}" : $"{baseUrl}/api/Face", content);
             }, context);
 
             content.Dispose();
@@ -138,6 +144,12 @@ namespace GeekBurger_HTML.Controllers
                 _debugService.SendMessageAsync(message[0], message[1], message.Length > 2 ? message[2] : null).Wait();
 
             return Json("OK");
+        }
+        [HttpPost]
+        public IActionResult BaseUri(string baseUri)
+        {
+            _baseUri = baseUri;
+            return Ok();
         }
     }
 
